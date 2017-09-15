@@ -65,7 +65,7 @@ PROJECT_NAME=$(PROJECT_NAME)
 APP_SITE=$(APP_SITE)
 
 # dcape network connect to, must be set in .env
-DCAPE_NET=dockin_default
+DCAPE_NET=$(DCAPE_NET)
 
 endef
 export CONFIG_DEF
