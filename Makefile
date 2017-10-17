@@ -1,5 +1,5 @@
-# docin project Makefile
-# Deploy projects with containerised docker-compose
+# dcape-app-nginx-sample Makefile
+# Static site served by nginx
 
 SHELL         = /bin/bash
 CFG          ?= .env
@@ -37,6 +37,7 @@ down:
 down: CMD=rm -f -s
 down: dc
 
+## create $(CFG) if not exists
 setup: $(CFG)
 
 start-hook: CMD=up -d
@@ -46,6 +47,7 @@ start-hook: dc
 stop: down
 	@echo "*** $@ ***"
 
+# git pull is enough here
 update:
 	@echo "*** $@ ***"
 
@@ -87,10 +89,6 @@ dc: docker-compose.yml
   docker/compose:$$DC_VER \
   -p $$PROJECT_NAME \
   $(CMD)
-
-#  --env=golang_version=$$GO_VER \
-#  --env=cron_version=$$CRON_VER \
-
 
 help:
 	@grep -A 1 "^##" Makefile | less
