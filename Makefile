@@ -16,9 +16,6 @@ DCAPE_NET    ?= dcape_default
 # docker-compose version
 DC_VER        = 1.14.0
 
-# used by deploy system
-DOCKER_BIN   ?= docker
-
 # -----------------------------------------------------------------------------
 
 -include $(CFG)
@@ -82,7 +79,7 @@ $(CFG):
 # и относительные тома новых контейнеров могли его использовать
 ## run docker-compose
 dc: docker-compose.yml
-	@$$DOCKER_BIN run --rm  -i \
+	@docker run --rm  -i \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v $$PWD:$$PWD \
   -w $$PWD \
