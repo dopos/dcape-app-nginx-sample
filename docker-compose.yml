@@ -3,33 +3,29 @@ version: '2'
 
 services:
   www:
-    image: nginx:1.13-alpine
-    networks:
-      - web
-    restart: always
+    image: nginx:${IMAGE_VER}
     labels:
-      - "traefik.enable=true"
-      - "traefik.backend=www.${APP_SITE}"
-      - "traefik.frontend.rule=Host:www.${APP_SITE}"
+      - traefik.enable=true
+      - dcape.traefik.tag=${DCAPE_TAG}
+      - traefik.http.routers.${APP_TAG}.rule=Host(`${APP_SITE:?Must be set}`) || Host(`www.${APP_SITE}`)
+      # TLS support
+      - traefik.http.routers.${APP_TAG}.tls=${USE_TLS}
+      - traefik.http.routers.${APP_TAG}.tls.certresolver=letsEncrypt
+      - traefik.http.routers.${APP_TAG}.tls.domains[0].main=${APP_SITE}
+      - traefik.http.routers.${APP_TAG}.tls.domains[0].sans=${APP_ACME_DOMAIN}
+      # Redirect www.host -> host
+      - "traefik.http.middlewares.${APP_TAG}-redirwww.redirectregex.regex=^http(s?)://www.${APP_SITE}/(.*)"
+      - "traefik.http.middlewares.${APP_TAG}-redirwww.redirectregex.replacement=http$${1}://${APP_SITE}/$${2}"
+      - traefik.http.routers.${APP_TAG}.middlewares=${APP_TAG}-redirwww
     volumes:
-      - .:/usr/share/nginx:ro
-
-  redirect:
-    image: nginx:1.13-alpine
-    networks:
-      - web
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+      - ${APP_ROOT}/html:/usr/share/nginx/html:ro
     restart: always
-    depends_on:
-      - www
-    environment:
-    - SERVER_REDIRECT=www.${APP_SITE}
-    labels:
-    - "traefik.enable=true"
-    - "traefik.frontend.rule=Host:${APP_SITE}"
-    volumes:
-    - ./nginx_redirect.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - lan
 
 networks:
-  web:
+  lan:
     external:
       name: ${DCAPE_NET}

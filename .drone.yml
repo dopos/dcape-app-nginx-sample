@@ -1,0 +1,23 @@
+---
+kind: pipeline
+type: docker
+name: website
+
+steps:
+
+- name: deploy_local
+  pull: never
+  image: ${DCAPE_COMPOSE}
+  commands:
+  - . setup config
+  - . setup root
+  - cp -pr html $APP_ROOT/
+  - docker-compose up -d --force-recreate
+  volumes:
+  - name: dockersock
+    path: /var/run/docker.sock
+
+volumes:
+- name: dockersock
+  host:
+    path: /var/run/docker.sock
