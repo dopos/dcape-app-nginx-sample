@@ -14,12 +14,19 @@ services:
       - traefik.http.routers.${APP_TAG}.tls.domains[0].main=${APP_SITE}
       - traefik.http.routers.${APP_TAG}.tls.domains[0].sans=${APP_ACME_DOMAIN}
       # Redirect www.host -> host
-      - "traefik.http.middlewares.${APP_TAG}-redirwww.redirectregex.regex=^http(s?)://www.${APP_SITE}/(.*)"
-      - "traefik.http.middlewares.${APP_TAG}-redirwww.redirectregex.replacement=http$${1}://${APP_SITE}/$${2}"
+      - traefik.http.middlewares.${APP_TAG}-redirwww.redirectregex.regex=^http(s?)://www.${APP_SITE}/(.*)
+      - traefik.http.middlewares.${APP_TAG}-redirwww.redirectregex.replacement=http$${1}://${APP_SITE}/$${2}
       - traefik.http.routers.${APP_TAG}.middlewares=${APP_TAG}-redirwww
     volumes:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+      # Show user's rel IP in logs
+      - ${APP_ROOT}/realip.conf:/etc/nginx/conf.d/realip.conf:ro
+      # Send gzipped static
+      - ${APP_ROOT}/gzip.conf:/etc/nginx/conf.d/gzip.conf:ro
+      # Enable local 404 eror page
+      - ${APP_ROOT}/enable404.sh:/docker-entrypoint.d/enable404.sh:ro
+      # Attach site content
       - ${APP_ROOT}/html:/usr/share/nginx/html:ro
     restart: always
     networks:

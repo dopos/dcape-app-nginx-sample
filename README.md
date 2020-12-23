@@ -12,11 +12,24 @@
 
 ## Docker image used
 
-* [nginx](https://store.docker.com/images/nginx)
+* [nginx](https://hub.docker.com/_/nginx)
+
+## Features
+
+This project contains
+
+* reference versions of core files for all of **dcape** applications since **dcape** v2:
+  * [Makefile](Makefile)
+  * [.drone.yml](.drone.yml)
+  * [docker-compose.yml](docker-compose.yml)
+* samples for some nginx features:
+  * log real user's ip from traefik data
+  * send gzipped static files
+  * custom error pages
 
 ## Requirements
 
-* linux 64bit (git, make, wget, gawk, openssl)
+* linux 64bit (git, make, sed)
 * [docker](http://docker.io)
 * [dcape](https://github.com/dopos/dcape) v2
 * Git service ([github](https://github.com), [gitea](https://gitea.io) or [gogs](https://gogs.io))
@@ -29,7 +42,7 @@
 * Drone: Activate repo
 * Gitea: "Test delivery", config sample will be saved to enfist
 * Enfist: Edit config and remove .sample from name
-* Gitea: "Test delivery" again (or Drone: Restart) - app will be installed and started on webhook host
+* Gitea: "Test delivery" again (or Drone: "Restart") - app will be installed and started on webhook host
 
 ### By hands
 
