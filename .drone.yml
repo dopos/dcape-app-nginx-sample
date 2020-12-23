@@ -11,8 +11,7 @@ steps:
   commands:
   - . setup config
   - . setup root
-  - cp -pr html $APP_ROOT/
-  - docker-compose up -d --force-recreate
+  - make .drone-up
   volumes:
   - name: dockersock
     path: /var/run/docker.sock

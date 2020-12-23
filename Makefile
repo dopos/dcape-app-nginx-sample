@@ -1,15 +1,17 @@
-# dcape-app-nginx-sample Makefile
-# Static site served by nginx
-SHELL  = /bin/sh
-CFG   ?= .env
-DOT   := .
-DASH  := -
+## dcape-app-nginx-sample Makefile:
+## Static site served by nginx
+#:
+SHELL      = /bin/sh
+CFG       ?= .env
+CFGSAMPLE ?= $(CFG).sample
+DOT       := .
+DASH      := -
 
 IMAGE_VER       ?= 1.19.4-alpine
 APP_SITE        ?= host.dev.lan
 APP_TAG         ?= $(subst $(DOT),$(DASH),$(APP_SITE))
 USE_TLS         ?= false
-APP_ACME_DOMAIN ?= $(APP_SITE)
+APP_ACME_DOMAIN ?= www.$(APP_SITE)
 APP_ROOT        ?= $(PWD)
 DCAPE_TAG       ?= dcape
 DCAPE_NET       ?= dcape
@@ -25,13 +27,15 @@ APP_SITE=$(APP_SITE)
 
 # Unique traefik router name
 # Container name prefix
-APP_TAG=$(APP_TAG)
+# Value is optional, derived from APP_SITE if empty
+# APP_TAG=$(APP_TAG)
 
-# Use TLS (true|false)
+# Enable tls in traefik
+# Values: [false]|true
 USE_TLS=$(USE_TLS)
 
 # Certificate domain (www.APP_SITE or *.APP_SITE)
-APP_ACME_DOMAIN=www.$(APP_ACME_DOMAIN)
+APP_ACME_DOMAIN=$(APP_ACME_DOMAIN)
 
 # nginx image version
 IMAGE_VER=$(IMAGE_VER)
@@ -44,60 +48,92 @@ export CONFIG_DEF
 -include $(CFG)
 export
 
-.PHONY: all up down setup start-hook stop dcrun help
+.PHONY: all up down dc init config .drone-up start-hook stop update help
 
 all: help
 
 # -----------------------------------------------------------------------------
+## Docker-compose commands
+#:
 
-## container: (re)start
+## (re)start container
 up:
 up: CMD=up --force-recreate -d
 up: dc
 
-## container: stop (and remove)
+## stop (and remove) container
 down:
 down: CMD=rm -f -s
 down: dc
-
-# -----------------------------------------------------------------------------
-# dcape v1 deploy targets
-
-start-hook: CMD=up -d
-start-hook: dc
-	@echo "*** $@ ***"
-
-stop: down
-	@echo "*** $@ ***"
-
-# git pull is enough here
-update:
-	@echo "*** $@ ***"
-
-# ------------------------------------------------------------------------------
 
 # $$PWD usage allows host directory mounts in child containers
 # Thish works if path is the same for host, docker, docker-compose and child container
 ## run $(CMD) via docker-compose
 dc: docker-compose.yml
+	@echo $(APP_TAG)
 	@docker run --rm  -i \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v $$PWD:$$PWD -w $$PWD \
-  -e DCAPE_TAG -e DCAPE_NET -e APP_ROOT \
+  -e DCAPE_TAG -e DCAPE_NET -e APP_ROOT -e APP_TAG \
   docker/compose:$$DC_VER \
   -p $$APP_TAG --env-file $(CFG) \
   $(CMD)
 
-## Generate config sample
-config: $(CFG).sample
+# ------------------------------------------------------------------------------
+## Application setup
+#:
 
-$(CFG).sample:
+## generate config file
+## (if not exists)
+init:
+	@[ -f $(CFG) ] && { echo "$(CFG) already exists. Skipping" ; exit 0 ; } || true
+	@echo "$$CONFIG_DEF" > $(CFG)
+
+## generate config sample
+## (if .env exists, its values will be used)
+config: $(CFGSAMPLE)
+
+$(CFGSAMPLE):
+	@echo "$$CONFIG_DEF" > $(CFGSAMPLE)
+
+# -----------------------------------------------------------------------------
+
+# Run app inside drone
+# Used in .drone.yml
+# Do not use outside
+.drone-up:
 	@echo "*** $@ ***"
-	@echo "$$CONFIG_DEF" > $@
+	@[ "$$PWD" = "$(APP_ROOT)" ] && { echo "APP_ROOT == PWD, so we're not inside drone. Aborting" ; exit 1 ; } || true
+	@cp -pr html enable404.sh gzip.conf realip.conf $(APP_ROOT)/
+	@docker-compose -p $(APP_TAG) up -d --force-recreate
 
+# -----------------------------------------------------------------------------
+## dcape v1 deploy targets
+#:
+
+## start container
+start-hook: CMD=up -d
+start-hook: dc
+	@echo "*** $@ ***"
+
+## alias for `make down`
+stop: down
+	@echo "*** $@ ***"
+
+# git pull is enough here
+## empty command
+update:
+	@echo "*** $@ ***"
+
+# ------------------------------------------------------------------------------
+## Other
+#:
+
+# This code handles group header and target comment with one or two lines only
+## list Makefile targets
+## (this is defailt target)
 help:
-	@grep -A 1 "^##" Makefile | less
-
-##
-## Press 'q' for exit
-##
+	@grep -A 1 -h "^## " $(MAKEFILE_LIST) \
+  | sed -E 's/^--$$// ; /./{H;$$!d} ; x ; s/^\n## ([^\n]+)\n(## (.+)\n)*(.+):(.*)$$/"    " "\4" "\1" "\3"/' \
+  | sed -E 's/^"    " "#" "(.+)" "(.*)"$$/"" "" "" ""\n"\1 \2" "" "" ""/' \
+  | xargs printf "%s\033[36m%-15s\033[0m %s %s\n"
