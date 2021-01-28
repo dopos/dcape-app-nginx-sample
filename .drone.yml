@@ -1,7 +1,7 @@
 ---
 kind: pipeline
 type: docker
-name: website
+name: app
 
 steps:
 
@@ -10,8 +10,7 @@ steps:
   image: ${DCAPE_COMPOSE}
   commands:
   - . setup config
-  - . setup root
-  - make .drone-up
+  - make .drone-default
   volumes:
   - name: dockersock
     path: /var/run/docker.sock

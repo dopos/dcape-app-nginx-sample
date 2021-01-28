@@ -21,7 +21,7 @@ This project contains
 * reference versions of core files for all of **dcape** applications since **dcape** v2:
   * [Makefile](Makefile)
   * [.drone.yml](.drone.yml)
-  * [docker-compose.yml](docker-compose.yml)
+  * [dcape-compose.yml](dcape-compose.yml)
 * samples for some nginx features:
   * log real user's ip from traefik data
   * send gzipped static files
