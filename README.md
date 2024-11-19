@@ -18,10 +18,10 @@
 
 This project contains
 
-* reference versions of core files for all of **dcape** applications since **dcape** v2:
+* reference versions of core files for all of **dcape** applications since **dcape** v3:
   * [Makefile](Makefile)
-  * [.drone.yml](.drone.yml)
-  * [dcape-compose.yml](dcape-compose.yml)
+  * [.woodpecker.yml](.woodpecker.yml)
+  * [docker-compose.yml](docker-compose.yml)
 * samples for some nginx features:
   * log real user's ip from traefik data
   * send gzipped static files
@@ -31,7 +31,7 @@ This project contains
 
 * linux 64bit (git, make, sed)
 * [docker](http://docker.io)
-* [dcape](https://github.com/dopos/dcape) v2
+* [dcape](https://github.com/dopos/dcape) v3
 * Git service ([github](https://github.com), [gitea](https://gitea.io) or [gogs](https://gogs.io))
 
 ## Install
@@ -52,6 +52,7 @@ cd dcape-app-nginx-sample
 make config
 ... <edit .env.sample>
 mv .env.sample .env
+make docker-build
 make up
 ```
 
@@ -62,6 +63,7 @@ git pull
 make config
 ... <check .env.sample>
 mv .env.sample .env
+make docker-build
 make up
 ```
 

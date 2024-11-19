@@ -21,10 +21,7 @@ APP_SITE        ?= host.dev.test
 #- domain
 APP_ACME_DOMAIN ?= www.$(APP_SITE)
 
-#- app root
-APP_ROOT        ?= $(PWD)
-
-PERSIST_FILES    = html nginx
+PERSIST_FILES    =
 
 # ------------------------------------------------------------------------------
 
@@ -45,3 +42,5 @@ ifeq ($(shell test -e $(DCAPE_ROOT)/Makefile.app && echo -n yes),yes)
 else
   include /opt/dcape/Makefile.app
 endif
+
+.default-deploy: docker-build
